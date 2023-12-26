@@ -1,15 +1,15 @@
-import { PrimaryActionEmailHtml } from '../components/emails/PrimaryActionEmail'
-import { Access, CollectionConfig } from 'payload/types'
+import { PrimaryActionEmailHtml } from '../components/emails/PrimaryActionEmail';
+import { Access, CollectionConfig } from 'payload/types';
 
 const adminsAndUser: Access = ({ req: { user } }) => {
-  if (user.role === 'admin') return true
+  if (user.role === 'admin') return true;
 
   return {
     id: {
       equals: user.id,
     },
-  }
-}
+  };
+};
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -17,10 +17,10 @@ export const Users: CollectionConfig = {
     verify: {
       generateEmailHTML: ({ token }) => {
         return PrimaryActionEmailHtml({
-          actionLabel: "verify your account",
-          buttonText: "Verify Account",
-          href: `${process.env.NEXT_PUBLIC_SERVER_URL}/verify-email?token=${token}`
-        })
+          actionLabel: 'verify your account',
+          buttonText: 'Verify Account',
+          href: `${process.env.NEXT_PUBLIC_SERVER_URL}/verify-email?token=${token}`,
+        });
       },
     },
   },
@@ -66,5 +66,12 @@ export const Users: CollectionConfig = {
         { label: 'User', value: 'user' },
       ],
     },
+    { name: 'firstName', label: 'First Name', type: 'text', required: true },
+    {
+      name: 'lastName',
+      label: 'Last Name',
+      type: 'text',
+      required: true,
+    },
   ],
-}
+};

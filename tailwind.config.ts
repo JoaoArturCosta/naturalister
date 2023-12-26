@@ -17,6 +17,11 @@ module.exports = {
     },
     extend: {
       colors: {
+        'turquoise': '#457D88',
+        'white': 'F6F1F4',
+        'salmon': '#D97275',
+        'pink': '#BB6476',
+        'purple': '#281926',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

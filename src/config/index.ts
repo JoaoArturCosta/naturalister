@@ -1,7 +1,7 @@
 export const PRODUCT_CATEGORIES = [
   {
-    label: 'UI Kits',
-    value: 'ui_kits' as const,
+    label: 'Wines',
+    value: 'wines' as const,
     featured: [
       {
         name: 'Editor picks',
@@ -9,13 +9,13 @@ export const PRODUCT_CATEGORIES = [
         imageSrc: '/nav/ui-kits/mixed.jpg',
       },
       {
-        name: 'New Arrivals',
-        href: '/products?category=ui_kits&sort=desc',
+        name: 'New Additions',
+        href: '/products?category=wines&sort=desc',
         imageSrc: '/nav/ui-kits/blue.jpg',
       },
       {
-        name: 'Bestsellers',
-        href: '/products?category=ui_kits',
+        name: 'Top rated',
+        href: '/products?category=wines',
         imageSrc: '/nav/ui-kits/purple.jpg',
       },
     ],
@@ -41,4 +41,4 @@ export const PRODUCT_CATEGORIES = [
       },
     ],
   },
-]
+];

@@ -1,8 +1,32 @@
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { useRouter } from 'next/navigation';
+import { createGlobalState } from 'react-hooks-global-state';
+import { toast } from 'sonner';
+
+const initialState = {
+  user: {
+    exp: 0,
+    token: '',
+    user: {
+      createdAt: '',
+      email: '',
+      firstName: '',
+      id: '',
+      lastName: '',
+      role: '',
+      updatedAt: '',
+      _verified: false,
+    },
+  },
+};
+const { useGlobalState, setGlobalState } = createGlobalState(initialState);
+
+const setUser = (user: any) => {
+  setGlobalState('user', user);
+};
 
 export const useAuth = () => {
-  const router = useRouter()
+  const [user] = useGlobalState('user');
+  const router = useRouter();
 
   const signOut = async () => {
     try {
@@ -15,18 +39,20 @@ export const useAuth = () => {
             'Content-Type': 'application/json',
           },
         }
-      )
+      );
 
-      if (!res.ok) throw new Error()
+      if (!res.ok) throw new Error();
 
-      toast.success('Signed out successfully')
+      toast.success('Signed out successfully');
 
-      router.push('/sign-in')
-      router.refresh()
+      router.push('/sign-in');
+      router.refresh();
     } catch (err) {
-      toast.error("Couldn't sign out, please try again.")
+      toast.error("Couldn't sign out, please try again.");
     }
-  }
+  };
 
-  return { signOut }
-}
+  return { signOut, user, setUser };
+};
+
+export default useAuth;

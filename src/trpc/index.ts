@@ -1,9 +1,9 @@
-import { z } from 'zod'
-import { authRouter } from './auth-router'
-import { publicProcedure, router } from './trpc'
-import { QueryValidator } from '../lib/validators/query-validator'
-import { getPayloadClient } from '../get-payload'
-import { paymentRouter } from './payment-router'
+import { z } from 'zod';
+import { authRouter } from './auth-router';
+import { publicProcedure, router } from './trpc';
+import { QueryValidator } from '../lib/validators/query-validator';
+import { getPayloadClient } from '../get-payload';
+import { paymentRouter } from './payment-router';
 
 export const appRouter = router({
   auth: authRouter,
@@ -18,23 +18,20 @@ export const appRouter = router({
       })
     )
     .query(async ({ input }) => {
-      const { query, cursor } = input
-      const { sort, limit, ...queryOpts } = query
+      const { query, cursor } = input;
+      const { sort, limit, ...queryOpts } = query;
 
-      const payload = await getPayloadClient()
+      const payload = await getPayloadClient();
 
-      const parsedQueryOpts: Record<
-        string,
-        { equals: string }
-      > = {}
+      const parsedQueryOpts: Record<string, { equals: string }> = {};
 
       Object.entries(queryOpts).forEach(([key, value]) => {
         parsedQueryOpts[key] = {
           equals: value,
-        }
-      })
+        };
+      });
 
-      const page = cursor || 1
+      const page = cursor || 1;
 
       const {
         docs: items,
@@ -52,13 +49,41 @@ export const appRouter = router({
         depth: 1,
         limit,
         page,
-      })
+      });
 
       return {
         items,
         nextPage: hasNextPage ? nextPage : null,
-      }
+      };
     }),
-})
 
-export type AppRouter = typeof appRouter
+  postReview: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        author: z.string(),
+        review: z.string(),
+        rating: z.number(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { author, id, review, rating } = input;
+
+      const payload = await getPayloadClient();
+
+      const created = await payload.create({
+        collection: 'reviews',
+        data: {
+          author: author,
+          content: review,
+          rating,
+          replyPost: id,
+          isApproved: true,
+        },
+      });
+
+      return { success: true };
+    }),
+});
+
+export type AppRouter = typeof appRouter;

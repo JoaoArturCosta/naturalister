@@ -1,10 +1,10 @@
-# DigitalHippo - A Modern Fullstack E-Commerce Marketplace for Digital Products
+# NatSpotter - A Natural Wine Afficionados Community
 
 Built with the Next.js 14 App Router, tRPC, TypeScript, Payload & Tailwind
 
-![Project Image](https://github.com/joschan21/digitalhippo/blob/master/public/thumbnail.jpg)
+<!-- ![Project Image](https://github.com/joschan21/digitalhippo/blob/master/public/thumbnail.jpg) -->
 
-## Features
+<!-- ## Features
 
 - 🛠️ Complete marketplace built from scratch in Next.js 14
 - 💻 Beautiful landing page & product pages included
@@ -33,7 +33,7 @@ and copy the .env.example variables into a separate .env file, fill them out & a
 
 ## Acknowledgements
 
-- [Payload](https://link.joshtriedcoding.com/payload) for making this project possible
+- [Payload](https://link.joshtriedcoding.com/payload) for making this project possible -->
 
 ## License
 
