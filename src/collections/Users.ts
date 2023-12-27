@@ -46,6 +46,16 @@ export const Users: CollectionConfig = {
       hasMany: true,
     },
     {
+      name: 'reviews',
+      label: 'Reviews',
+      admin: {
+        condition: () => false,
+      },
+      type: 'relationship',
+      relationTo: 'reviews',
+      hasMany: true,
+    },
+    {
       name: 'product_files',
       label: 'Product files',
       admin: {

@@ -54,6 +54,7 @@ export interface Product {
     image: string | Media;
     id?: string | null;
   }[];
+  rating?: number | null;
   updatedAt: string;
   createdAt: string;
 }

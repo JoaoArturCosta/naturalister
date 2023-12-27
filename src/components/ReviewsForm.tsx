@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Textarea } from './ui/textarea';
+import { Textarea } from '@/components/ui/textarea';
 import { Rating } from '@smastrom/react-rating';
 import { trpc } from '@/trpc/client';
 import { toast } from 'sonner';
@@ -21,6 +21,7 @@ import {
   TReviewValidator,
 } from '@/lib/validators/review-validator';
 import useAuth from '@/hooks/use-auth';
+import { Separator } from '@/components/ui/separator';
 
 const ReviewsForm = ({ productId }: { productId: string }) => {
   const { user } = useAuth();
@@ -48,57 +49,62 @@ const ReviewsForm = ({ productId }: { productId: string }) => {
   });
 
   const onSubmit = (values: TReviewValidator) => {
-    console.log(values);
-    console.log(user);
+    console.log('values', values);
     processComment(values);
   };
 
+  if (!user?.token) return null;
+
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-8">
-        <FormField
-          control={form.control}
-          name="review"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Your Review</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Tell us your thoughts..."
-                  className="resize-none"
-                  {...field}
+    <>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-8">
+          <FormField
+            control={form.control}
+            name="review"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Your Review</FormLabel>
+                <FormControl>
+                  <Textarea
+                    disabled={!user?.token}
+                    placeholder="Tell us your thoughts..."
+                    className="resize-none"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="rating"
+            render={({ field }) => (
+              <FormItem>
+                <Rating
+                  style={{ maxWidth: 100 }}
+                  isRequired
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="rating"
-          render={({ field }) => (
-            <FormItem>
-              <Rating
-                style={{ maxWidth: 100 }}
-                isRequired
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-              />
-              <FormLabel> {field.value} / 5 </FormLabel>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button
-          disabled={isLoading}
-          type="submit">
-          Submit
-        </Button>
-      </form>
-    </Form>
+                <FormLabel> {field.value} / 5 </FormLabel>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button
+            disabled={isLoading || !user?.token}
+            type="submit">
+            Submit
+          </Button>
+        </form>
+      </Form>
+      <Separator />
+    </>
   );
 };
 

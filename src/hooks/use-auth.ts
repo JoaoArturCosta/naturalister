@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 const initialState = {
   user: {
     exp: 0,
-    token: '',
+    token: undefined,
     user: {
       createdAt: '',
       email: '',

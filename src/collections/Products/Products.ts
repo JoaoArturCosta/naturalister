@@ -1,44 +1,38 @@
 import {
   AfterChangeHook,
   BeforeChangeHook,
-} from 'payload/dist/collections/config/types'
-import { PRODUCT_CATEGORIES } from '../../config'
-import { Access, CollectionConfig } from 'payload/types'
-import { Product, User } from '../../payload-types'
-import { stripe } from '../../lib/stripe'
+} from 'payload/dist/collections/config/types';
+import { PRODUCT_CATEGORIES } from '../../config';
+import { Access, CollectionConfig } from 'payload/types';
+import { Product, User } from '../../payload-types';
+import { stripe } from '../../lib/stripe';
 
-const addUser: BeforeChangeHook<Product> = async ({
-  req,
-  data,
-}) => {
-  const user = req.user
+const addUser: BeforeChangeHook<Product> = async ({ req, data }) => {
+  const user = req.user;
 
-  return { ...data, user: user.id }
-}
+  return { ...data, user: user.id };
+};
 
-const syncUser: AfterChangeHook<Product> = async ({
-  req,
-  doc,
-}) => {
+const syncUser: AfterChangeHook<Product> = async ({ req, doc }) => {
   const fullUser = await req.payload.findByID({
     collection: 'users',
     id: req.user.id,
-  })
+  });
 
   if (fullUser && typeof fullUser === 'object') {
-    const { products } = fullUser
+    const { products } = fullUser;
 
     const allIDs = [
-      ...(products?.map((product) =>
+      ...(products?.map(product =>
         typeof product === 'object' ? product.id : product
       ) || []),
-    ]
+    ];
 
     const createdProductIDs = allIDs.filter(
       (id, index) => allIDs.indexOf(id) === index
-    )
+    );
 
-    const dataToUpdate = [...createdProductIDs, doc.id]
+    const dataToUpdate = [...createdProductIDs, doc.id];
 
     await req.payload.update({
       collection: 'users',
@@ -46,37 +40,62 @@ const syncUser: AfterChangeHook<Product> = async ({
       data: {
         products: dataToUpdate,
       },
-    })
+    });
   }
-}
+};
+
+const getProductRating: AfterChangeHook<Product> = async ({ req, doc }) => {
+  const reviews = await req.payload.find({
+    collection: 'reviews',
+    where: {
+      replyPost: {
+        equals: doc.id,
+      },
+    },
+  });
+
+  const ratings = reviews.docs.map(review => review.rating || 0);
+
+  const average =
+    ratings?.reduce((acc, rating) => acc + rating, 0) / ratings.length;
+
+  await req.payload.update({
+    collection: 'products',
+    id: doc.id,
+    data: {
+      rating: average,
+    },
+  });
+};
 
 const isAdminOrHasAccess =
   (): Access =>
   ({ req: { user: _user } }) => {
-    const user = _user as User | undefined
+    const user = _user as User | undefined;
 
-    if (!user) return false
-    if (user.role === 'admin') return true
+    if (!user) return false;
+    if (user.role === 'admin') return true;
 
-    const userProductIDs = (user.products || []).reduce<
-      Array<string>
-    >((acc, product) => {
-      if (!product) return acc
-      if (typeof product === 'string') {
-        acc.push(product)
-      } else {
-        acc.push(product.id)
-      }
+    const userProductIDs = (user.products || []).reduce<Array<string>>(
+      (acc, product) => {
+        if (!product) return acc;
+        if (typeof product === 'string') {
+          acc.push(product);
+        } else {
+          acc.push(product.id);
+        }
 
-      return acc
-    }, [])
+        return acc;
+      },
+      []
+    );
 
     return {
       id: {
         in: userProductIDs,
       },
-    }
-  }
+    };
+  };
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -89,45 +108,43 @@ export const Products: CollectionConfig = {
     delete: isAdminOrHasAccess(),
   },
   hooks: {
-    afterChange: [syncUser],
+    afterChange: [syncUser, getProductRating],
     beforeChange: [
       addUser,
-      async (args) => {
+      async args => {
         if (args.operation === 'create') {
-          const data = args.data as Product
+          const data = args.data as Product;
 
-          const createdProduct =
-            await stripe.products.create({
-              name: data.name,
-              default_price_data: {
-                currency: 'USD',
-                unit_amount: Math.round(data.price * 100),
-              },
-            })
+          const createdProduct = await stripe.products.create({
+            name: data.name,
+            default_price_data: {
+              currency: 'USD',
+              unit_amount: Math.round(data.price * 100),
+            },
+          });
 
           const updated: Product = {
             ...data,
             stripeId: createdProduct.id,
             priceId: createdProduct.default_price as string,
-          }
+          };
 
-          return updated
+          return updated;
         } else if (args.operation === 'update') {
-          const data = args.data as Product
+          const data = args.data as Product;
 
-          const updatedProduct =
-            await stripe.products.update(data.stripeId!, {
-              name: data.name,
-              default_price: data.priceId!,
-            })
+          const updatedProduct = await stripe.products.update(data.stripeId!, {
+            name: data.name,
+            default_price: data.priceId!,
+          });
 
           const updated: Product = {
             ...data,
             stripeId: updatedProduct.id,
             priceId: updatedProduct.default_price as string,
-          }
+          };
 
-          return updated
+          return updated;
         }
       },
     ],
@@ -166,9 +183,7 @@ export const Products: CollectionConfig = {
       name: 'category',
       label: 'Category',
       type: 'select',
-      options: PRODUCT_CATEGORIES.map(
-        ({ label, value }) => ({ label, value })
-      ),
+      options: PRODUCT_CATEGORIES.map(({ label, value }) => ({ label, value })),
       required: true,
     },
     {
@@ -248,5 +263,17 @@ export const Products: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'rating',
+      type: 'number',
+      admin: {
+        readOnly: true,
+      },
+      access: {
+        create: () => false,
+        read: () => true,
+        update: () => false,
+      },
+    },
   ],
-}
+};

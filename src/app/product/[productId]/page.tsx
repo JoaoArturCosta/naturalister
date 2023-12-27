@@ -2,10 +2,12 @@ import AddToCartButton from '@/components/AddToCartButton';
 import ImageSlider from '@/components/ImageSlider';
 import MaxWidthWrapper from '@/components/MaxWidthWrapper';
 import ProductReel from '@/components/ProductReel';
+import ReviewReel from '@/components/ReviewReel';
 import ReviewsForm from '@/components/ReviewsForm';
+import { Separator } from '@/components/ui/separator';
 import { PRODUCT_CATEGORIES } from '@/config';
 import { getPayloadClient } from '@/get-payload';
-import { formatPrice } from '@/lib/utils';
+import { Rating } from '@smastrom/react-rating';
 import { Check, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -39,6 +41,19 @@ const Page = async ({ params }: PageProps) => {
     },
   });
 
+  const { docs: reviews } = await payload.find({
+    collection: 'reviews',
+    where: {
+      replyPost: {
+        equals: productId,
+      },
+    },
+  });
+
+  const averageRating =
+    reviews.reduce((acc, { rating }) => acc + (rating || 0), 0) /
+    reviews.length;
+
   const [product] = products;
 
   if (!product) return notFound();
@@ -54,7 +69,7 @@ const Page = async ({ params }: PageProps) => {
   return (
     <MaxWidthWrapper className="bg-white">
       <div className="bg-white">
-        <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:grid lg:max-w-7xl lg:grid-cols-2 lg:gap-x-8 lg:px-8">
+        <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-12 lg:grid lg:max-w-7xl lg:grid-cols-2 lg:gap-x-8 lg:px-8">
           {/* Product Details */}
           <div className="lg:max-w-lg lg:self-end">
             <ol className="flex items-center space-x-2">
@@ -88,8 +103,13 @@ const Page = async ({ params }: PageProps) => {
 
             <section className="mt-4">
               <div className="flex items-center">
-                <p className="font-medium text-gray-900">
-                  {formatPrice(product.price)}
+                <p className=" flex gap-2 font-semibold text-gray-900">
+                  <Rating
+                    readOnly
+                    value={averageRating || 0}
+                    style={{ maxWidth: 80 }}
+                  />
+                  <span>{averageRating.toFixed(2) || 0}</span>
                 </p>
 
                 <div className="ml-4 border-l text-muted-foreground border-gray-300 pl-4">
@@ -143,15 +163,20 @@ const Page = async ({ params }: PageProps) => {
           </div>
         </div>
       </div>
+      <Separator />
 
+      <ReviewsForm productId={productId} />
+
+      <ReviewReel
+        query={{ limit: 5, sort: '-createdAt', relatedProductId: productId }}
+      />
+      <Separator />
       <ProductReel
         href="/products"
         query={{ category: product.category, limit: 4 }}
         title={`Similar ${label}`}
         subtitle={`Browse similar high-quality ${label} just like '${product.name}'`}
       />
-
-      <ReviewsForm productId={productId} />
     </MaxWidthWrapper>
   );
 };
