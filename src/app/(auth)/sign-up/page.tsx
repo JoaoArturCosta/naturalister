@@ -11,22 +11,31 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 
 import {
-  AuthCredentialsValidatorWithName,
-  TAuthCredentialsValidatorWithName,
+  AuthCredentialsValidatorWithUserDetails,
+  TAuthCredentialsValidatorWithUserDetails,
 } from '@/lib/validators/account-credentials-validator';
 import { trpc } from '@/trpc/client';
 import { toast } from 'sonner';
 import { ZodError } from 'zod';
 import { useRouter } from 'next/navigation';
+import CountrySelector, { SelectedCountry } from '@/components/CountrySelector';
+import { useState } from 'react';
+import { COUNTRIES } from '@/config/countries';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 
 const Page = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<TAuthCredentialsValidatorWithName>({
-    resolver: zodResolver(AuthCredentialsValidatorWithName),
+  const form = useForm<TAuthCredentialsValidatorWithUserDetails>({
+    resolver: zodResolver(AuthCredentialsValidatorWithUserDetails),
   });
+
+  // const [isCountrySelectorOpen, setIsCountrySelectorOpen] = useState(false);
+  // const [country, setCountry] = useState<SelectedCountry['value']>('BE');
 
   const router = useRouter();
 
@@ -55,15 +64,16 @@ const Page = () => {
   const onSubmit = ({
     firstName,
     lastName,
+    country,
     email,
     password,
-  }: TAuthCredentialsValidatorWithName) => {
-    mutate({ firstName, lastName, email, password });
+  }: TAuthCredentialsValidatorWithUserDetails) => {
+    mutate({ firstName, lastName, email, country, password });
   };
 
   return (
     <>
-      <div className="container relative flex pt-20 flex-col items-center justify-center lg:px-0">
+      <div className="container relative flex py-20 flex-col items-center justify-center lg:px-0">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
           <div className="flex flex-col items-center space-y-2 text-center">
             <Icons.logo className="h-20 w-20" />
@@ -83,74 +93,95 @@ const Page = () => {
           </div>
 
           <div className="grid gap-6">
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="grid gap-2">
-                <div className="grid gap-1 py-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    {...register('firstName')}
-                    className={cn({
-                      'focus-visible:ring-red-500': errors.firstName,
-                    })}
-                    placeholder="you@example.com"
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <div className="grid gap-2">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <div className="grid gap-1 py-2">
+                        <FormLabel htmlFor="firstName">First Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="John"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
+                    )}
                   />
-                  {errors?.firstName && (
-                    <p className="text-sm text-red-500">
-                      {errors.firstName.message}
-                    </p>
-                  )}
-                </div>
-                <div className="grid gap-1 py-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    {...register('lastName')}
-                    className={cn({
-                      'focus-visible:ring-red-500': errors.lastName,
-                    })}
-                    placeholder="you@example.com"
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <div className="grid gap-1 py-2">
+                        <FormLabel htmlFor="lastName">Last Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Doe"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
+                    )}
                   />
-                  {errors?.lastName && (
-                    <p className="text-sm text-red-500">
-                      {errors.lastName.message}
-                    </p>
-                  )}
-                </div>
-                <div className="grid gap-1 py-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    {...register('email')}
-                    className={cn({
-                      'focus-visible:ring-red-500': errors.email,
-                    })}
-                    placeholder="you@example.com"
-                  />
-                  {errors?.email && (
-                    <p className="text-sm text-red-500">
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
 
-                <div className="grid gap-1 py-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    {...register('password')}
-                    type="password"
-                    className={cn({
-                      'focus-visible:ring-red-500': errors.password,
-                    })}
-                    placeholder="Password"
+                  <FormField
+                    control={form.control}
+                    name="country"
+                    render={({ field }) => (
+                      <div className="grid gap-1 py-2">
+                        <Label htmlFor="country">Country</Label>
+                        <FormControl>
+                          <CountrySelector {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
+                    )}
                   />
-                  {errors?.password && (
-                    <p className="text-sm text-red-500">
-                      {errors.password.message}
-                    </p>
-                  )}
-                </div>
 
-                <Button>Sign up</Button>
-              </div>
-            </form>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <div className="grid gap-1 py-2">
+                        <FormLabel htmlFor="email">Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="you@example.com"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <div className="grid gap-1 py-2">
+                        <FormLabel htmlFor="password">Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Password"
+                            type="password"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
+                    )}
+                  />
+
+                  <Button type="submit">Sign up</Button>
+                </div>
+              </form>
+            </Form>
           </div>
         </div>
       </div>

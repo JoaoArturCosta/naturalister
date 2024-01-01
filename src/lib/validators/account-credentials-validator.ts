@@ -7,21 +7,23 @@ export const AuthCredentialsValidator = z.object({
   }),
 });
 
-export const AuthCredentialsValidatorWithName = AuthCredentialsValidator.extend(
-  {
+export const AuthCredentialsValidatorWithUserDetails =
+  AuthCredentialsValidator.extend({
     firstName: z.string().min(2, {
       message: 'First name must be at least 2 characters long.',
     }),
     lastName: z.string().min(2, {
       message: 'Last name must be at least 2 characters long.',
     }),
-  }
-);
+    country: z.string().min(2, {
+      message: 'Please select a country to continue.',
+    }),
+  });
 
 export type TAuthCredentialsValidator = z.infer<
   typeof AuthCredentialsValidator
 >;
 
-export type TAuthCredentialsValidatorWithName = z.infer<
-  typeof AuthCredentialsValidatorWithName
+export type TAuthCredentialsValidatorWithUserDetails = z.infer<
+  typeof AuthCredentialsValidatorWithUserDetails
 >;

@@ -4,58 +4,14 @@ import { publicProcedure, router } from './trpc';
 import { QueryValidator } from '../lib/validators/query-validator';
 import { getPayloadClient } from '../get-payload';
 import { paymentRouter } from './payment-router';
+import { productsRouter } from './products-router';
+import { bookmarkRouter } from './bookmarks-router';
 
 export const appRouter = router({
   auth: authRouter,
+  bookmarks: bookmarkRouter,
   payment: paymentRouter,
-
-  getInfiniteProducts: publicProcedure
-    .input(
-      z.object({
-        limit: z.number().min(1).max(100),
-        cursor: z.number().nullish(),
-        query: QueryValidator,
-      })
-    )
-    .query(async ({ input }) => {
-      const { query, cursor } = input;
-      const { sort, limit, ...queryOpts } = query;
-
-      const payload = await getPayloadClient();
-
-      const parsedQueryOpts: Record<string, { equals: string }> = {};
-
-      Object.entries(queryOpts).forEach(([key, value]) => {
-        parsedQueryOpts[key] = {
-          equals: value,
-        };
-      });
-
-      const page = cursor || 1;
-
-      const {
-        docs: items,
-        hasNextPage,
-        nextPage,
-      } = await payload.find({
-        collection: 'products',
-        where: {
-          approvedForSale: {
-            equals: 'approved',
-          },
-          ...parsedQueryOpts,
-        },
-        sort,
-        depth: 1,
-        limit,
-        page,
-      });
-
-      return {
-        items,
-        nextPage: hasNextPage ? nextPage : null,
-      };
-    }),
+  products: productsRouter,
 
   postReview: publicProcedure
     .input(
@@ -85,6 +41,33 @@ export const appRouter = router({
       return { success: true };
     }),
 
+  getUserProductReview: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        productId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { userId, productId } = input;
+
+      const payload = await getPayloadClient();
+
+      const { docs: reviews } = await payload.find({
+        collection: 'reviews',
+        where: {
+          replyPost: {
+            equals: productId,
+          },
+          author: {
+            equals: userId,
+          },
+        },
+      });
+
+      return reviews[0];
+    }),
+
   getInfiniteReviews: publicProcedure
     .input(
       z.object({
@@ -96,8 +79,6 @@ export const appRouter = router({
     .query(async ({ input }) => {
       const { query, cursor } = input;
       const { sort, limit, relatedProductId, ...queryOpts } = query;
-
-      console.log('sort', sort);
 
       const payload = await getPayloadClient();
 

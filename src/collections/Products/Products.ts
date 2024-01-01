@@ -44,29 +44,29 @@ const syncUser: AfterChangeHook<Product> = async ({ req, doc }) => {
   }
 };
 
-const getProductRating: AfterChangeHook<Product> = async ({ req, doc }) => {
-  const reviews = await req.payload.find({
-    collection: 'reviews',
-    where: {
-      replyPost: {
-        equals: doc.id,
-      },
-    },
-  });
+// const getProductRating: AfterChangeHook<Product> = async ({ req, doc }) => {
+//   const reviews = await req.payload.find({
+//     collection: 'reviews',
+//     where: {
+//       replyPost: {
+//         equals: doc.id,
+//       },
+//     },
+//   });
 
-  const ratings = reviews.docs.map(review => review.rating || 0);
+//   const ratings = reviews.docs.map(review => review.rating || 0);
 
-  const average =
-    ratings?.reduce((acc, rating) => acc + rating, 0) / ratings.length;
+//   const average =
+//     ratings?.reduce((acc, rating) => acc + rating, 0) / ratings.length;
 
-  await req.payload.update({
-    collection: 'products',
-    id: doc.id,
-    data: {
-      rating: average,
-    },
-  });
-};
+//   await req.payload.update({
+//     collection: 'products',
+//     id: doc.id,
+//     data: {
+//       rating: average,
+//     },
+//   });
+// };
 
 const isAdminOrHasAccess =
   (): Access =>
@@ -108,7 +108,7 @@ export const Products: CollectionConfig = {
     delete: isAdminOrHasAccess(),
   },
   hooks: {
-    afterChange: [syncUser, getProductRating],
+    afterChange: [syncUser],
     beforeChange: [
       addUser,
       async args => {
@@ -190,7 +190,7 @@ export const Products: CollectionConfig = {
       name: 'product_files',
       label: 'Product file(s)',
       type: 'relationship',
-      required: true,
+      required: false,
       relationTo: 'product_files',
       hasMany: false,
     },
@@ -273,6 +273,49 @@ export const Products: CollectionConfig = {
         create: () => false,
         read: () => true,
         update: () => false,
+      },
+    },
+    {
+      name: 'tags',
+      type: 'relationship',
+      relationTo: 'tags',
+      hasMany: true,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'country',
+      type: 'relationship',
+      relationTo: 'countries',
+      hasMany: false,
+    },
+    {
+      name: 'region',
+      type: 'text',
+    },
+    {
+      name: 'grape',
+      type: 'text',
+    },
+    {
+      name: 'color',
+      type: 'text',
+    },
+    {
+      name: 'alcohol',
+      type: 'text',
+    },
+    {
+      name: 'vintage',
+      type: 'text',
+    },
+    {
+      name: 'producer',
+      type: 'relationship',
+      relationTo: 'producers',
+      admin: {
+        position: 'sidebar',
       },
     },
   ],

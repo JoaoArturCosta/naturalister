@@ -53,16 +53,20 @@ const ReviewReel = (props: ReviewReelProps) => {
       <div className="md:flex md:items-center md:justify-between mb-4">
         <div className="max-w-2xl px-4 lg:max-w-4xl lg:px-0">
           <h1 className="flex gap-2 text-2xl font-bold text-gray-900 ">
-            {averageRating === 0 ? (
-              '0'
-            ) : (
-              <span className="flex items-center gap-1 ">
-                <StarFilledIcon />
-                {averageRating.toFixed(2)}
-              </span>
+            {!averageRating ? null : (
+              <>
+                <span className="flex items-center gap-1 ">
+                  <StarFilledIcon />
+                  {averageRating.toFixed(2)}
+                </span>
+                <span>&#183;</span>
+              </>
             )}
-            <span>&#183;</span>
-            {reviews?.length} reviews
+            {reviews?.length === 0
+              ? 'Be the first to review this product'
+              : `${reviews?.length} ${
+                  reviews?.length === 1 ? 'review' : 'reviews'
+                }`}
           </h1>
         </div>
       </div>
@@ -76,7 +80,7 @@ const ReviewReel = (props: ReviewReelProps) => {
           return (
             <ReviewCard
               key={review.id}
-              review={review}
+              {...review}
             />
           );
         })}

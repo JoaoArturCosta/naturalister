@@ -10,6 +10,11 @@ import { Media } from './collections/Media';
 import { ProductFiles } from './collections/ProductFile';
 import comments from 'payload-plugin-comments';
 import { Orders } from './collections/Orders';
+import Tags from './collections/Tags';
+import { Countries } from './collections/Countries';
+import Producers from './collections/Producers';
+import { Bookmarks } from './collections/Bookmarks';
+import { BookmarksCollections } from './collections/BookmarksCollection';
 
 dotenv.config({
   path: path.resolve(__dirname, '../.env'),
@@ -17,7 +22,18 @@ dotenv.config({
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
-  collections: [Users, Products, Media, ProductFiles, Orders],
+  collections: [
+    Users,
+    Products,
+    Media,
+    ProductFiles,
+    Orders,
+    Tags,
+    Countries,
+    Producers,
+    Bookmarks,
+    BookmarksCollections,
+  ],
   routes: {
     admin: '/contribute',
   },
@@ -47,11 +63,8 @@ export default buildConfig({
       fields: [
         {
           name: 'author',
-          type: 'text',
-        },
-        {
-          name: 'userId',
-          type: 'text',
+          type: 'relationship',
+          relationTo: 'users',
         },
         {
           name: 'rating',

@@ -1,12 +1,21 @@
 import AddToCartButton from '@/components/AddToCartButton';
+import BookmarkDialog from '@/components/BookmarkDialog';
 import ImageSlider from '@/components/ImageSlider';
 import MaxWidthWrapper from '@/components/MaxWidthWrapper';
 import ProductReel from '@/components/ProductReel';
 import ReviewReel from '@/components/ReviewReel';
 import ReviewsForm from '@/components/ReviewsForm';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { PRODUCT_CATEGORIES } from '@/config';
 import { getPayloadClient } from '@/get-payload';
+import { Country, Producer, Tag } from '@/payload-types';
 import { Rating } from '@smastrom/react-rating';
 import { Check, Shield } from 'lucide-react';
 import Link from 'next/link';
@@ -20,7 +29,7 @@ interface PageProps {
 
 const BREADCRUMBS = [
   { id: 1, name: 'Home', href: '/' },
-  { id: 2, name: 'Wines', href: '/wines' },
+  { id: 2, name: 'Wines', href: '/products?category=wines' },
 ];
 
 const Page = async ({ params }: PageProps) => {
@@ -52,9 +61,15 @@ const Page = async ({ params }: PageProps) => {
 
   const averageRating =
     reviews.reduce((acc, { rating }) => acc + (rating || 0), 0) /
-    reviews.length;
+      reviews.length || 0;
 
   const [product] = products;
+
+  const producer = product.producer as Producer;
+
+  const country = product.country as Country;
+
+  const tags = product.tags as Tag[];
 
   if (!product) return notFound();
 
@@ -96,6 +111,11 @@ const Page = async ({ params }: PageProps) => {
             </ol>
 
             <div className="mt-4">
+              <Link href={`/products?producerId=${producer?.id}`}>
+                <h4 className="font-light underline underline-offset-8 decoration-stone-200 decoration-1 pb-6">
+                  {producer?.title}
+                </h4>
+              </Link>
               <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                 {product.name}
               </h1>
@@ -106,7 +126,7 @@ const Page = async ({ params }: PageProps) => {
                 <p className=" flex gap-2 font-semibold text-gray-900">
                   <Rating
                     readOnly
-                    value={averageRating || 0}
+                    value={averageRating}
                     style={{ maxWidth: 80 }}
                   />
                   <span>{averageRating.toFixed(2) || 0}</span>
@@ -115,6 +135,20 @@ const Page = async ({ params }: PageProps) => {
                 <div className="ml-4 border-l text-muted-foreground border-gray-300 pl-4">
                   {label}
                 </div>
+
+                <div className="ml-4 text-muted-foreground">
+                  <BookmarkDialog productId={productId} />
+                </div>
+              </div>
+              <div className="mt-4 flex gap-2 items-center flex-wrap">
+                {tags?.map(({ title }) => (
+                  <Link
+                    key={title}
+                    href={`/products?tag=${title}`}
+                    className="text-sm font-medium underline underline-offset-2">
+                    {title}
+                  </Link>
+                ))}
               </div>
 
               <div className="mt-4 space-y-6">
@@ -123,7 +157,33 @@ const Page = async ({ params }: PageProps) => {
                 </p>
               </div>
 
-              <div className="mt-6 flex items-center">
+              <div className="mt-4 flex flex-col gap-2 ">
+                {!!country && (
+                  <p className="font-normal">Country: {country?.name}</p>
+                )}
+
+                {!!product?.region && (
+                  <p className="font-normal">Region: {product?.region}</p>
+                )}
+
+                {!!product?.grape && (
+                  <p className="font-normal">Grape: {product?.grape}</p>
+                )}
+
+                {!!product?.color && (
+                  <p className="font-normal">Colour: {product?.color}</p>
+                )}
+
+                {!!product?.alcohol && (
+                  <p className="font-normal">Alcohol: {product?.alcohol}</p>
+                )}
+
+                {!!product?.vintage && (
+                  <p className="font-normal">Vintage: {product?.vintage}</p>
+                )}
+              </div>
+
+              {/* <div className="mt-6 flex items-center">
                 <Check
                   aria-hidden="true"
                   className="h-5 w-5 flex-shrink-0 text-green-500"
@@ -131,7 +191,20 @@ const Page = async ({ params }: PageProps) => {
                 <p className="ml-2 text-sm text-muted-foreground">
                   Eligible for instant delivery
                 </p>
-              </div>
+              </div> */}
+              <Accordion
+                type="single"
+                collapsible
+                className="w-full">
+                <AccordionItem value="item-1">
+                  <AccordionTrigger>Producer Notes</AccordionTrigger>
+                  <AccordionContent>
+                    <p className="mt-4 text-base text-muted-foreground">
+                      {producer?.notes}
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </section>
           </div>
 
@@ -143,7 +216,7 @@ const Page = async ({ params }: PageProps) => {
           </div>
 
           {/* add to cart part */}
-          <div className="mt-10 lg:col-start-1 lg:row-start-2 lg:max-w-lg lg:self-start">
+          {/* <div className="mt-10 lg:col-start-1 lg:row-start-2 lg:max-w-lg lg:self-start">
             <div>
               <div className="mt-10">
                 <AddToCartButton product={product} />
@@ -160,7 +233,7 @@ const Page = async ({ params }: PageProps) => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
       <Separator />
@@ -173,7 +246,11 @@ const Page = async ({ params }: PageProps) => {
       <Separator />
       <ProductReel
         href="/products"
-        query={{ category: product.category, limit: 4 }}
+        query={{
+          category: product.category,
+          producerId: producer?.id,
+          limit: 4,
+        }}
         title={`Similar ${label}`}
         subtitle={`Browse similar high-quality ${label} just like '${product.name}'`}
       />

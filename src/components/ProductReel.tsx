@@ -18,16 +18,59 @@ const FALLBACK_LIMIT = 4;
 const ProductReel = (props: ProductReelProps) => {
   const { title, subtitle, href, query } = props;
 
-  const { data: queryResults, isLoading } =
-    trpc.getInfiniteProducts.useInfiniteQuery(
+  let queryResults = null;
+  let isLoading = false;
+
+  const { data: categoryQueryResults, isLoading: categoryIsLoading } =
+    trpc.products.getInfiniteProducts.useInfiniteQuery(
       {
         limit: query.limit ?? FALLBACK_LIMIT,
         query,
       },
       {
         getNextPageParam: lastPage => lastPage.nextPage,
+        enabled: !query.tag && !query.producerId,
       }
     );
+
+  const { data: tagQueryResults, isLoading: tagIsLoading } =
+    trpc.products.getInfiniteProducts.useInfiniteQuery(
+      {
+        limit: query.limit ?? FALLBACK_LIMIT,
+        query,
+      },
+      {
+        getNextPageParam: lastPage => lastPage.nextPage,
+        enabled: !!query.tag,
+      }
+    );
+
+  const { data: producerQueryResults, isLoading: producerIsLoading } =
+    trpc.products.getInfiniteProducts.useInfiniteQuery(
+      {
+        limit: query.limit ?? FALLBACK_LIMIT,
+        query,
+      },
+      {
+        getNextPageParam: lastPage => lastPage.nextPage,
+        enabled: !!query.producerId,
+      }
+    );
+
+  if (categoryQueryResults) {
+    queryResults = categoryQueryResults;
+    isLoading = categoryIsLoading;
+  }
+
+  if (tagQueryResults) {
+    queryResults = tagQueryResults;
+    isLoading = tagIsLoading;
+  }
+
+  if (producerQueryResults) {
+    queryResults = producerQueryResults;
+    isLoading = producerIsLoading;
+  }
 
   const products = queryResults?.pages.flatMap(page => page.items);
 

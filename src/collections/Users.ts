@@ -83,5 +83,18 @@ export const Users: CollectionConfig = {
       type: 'text',
       required: true,
     },
+    {
+      name: 'country',
+      label: 'Country',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'bookmarksCollections',
+      label: 'Bookmarks Collections',
+      type: 'relationship',
+      relationTo: 'bookmarksCollection',
+      hasMany: true,
+    },
   ],
 };

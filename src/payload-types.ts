@@ -13,6 +13,11 @@ export interface Config {
     media: Media;
     product_files: ProductFile;
     orders: Order;
+    tags: Tag;
+    countries: Country;
+    producers: Producer;
+    bookmarks: Bookmark;
+    bookmarksCollection: BookmarksCollection;
     reviews: Review;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -22,10 +27,13 @@ export interface Config {
 export interface User {
   id: string;
   products?: (string | Product)[] | null;
+  reviews?: (string | Review)[] | null;
   product_files?: (string | ProductFile)[] | null;
   role: 'admin' | 'user';
   firstName: string;
   lastName: string;
+  country: string;
+  bookmarksCollections?: (string | BookmarksCollection)[] | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -46,7 +54,7 @@ export interface Product {
   description?: string | null;
   price: number;
   category: 'wines' | 'icons';
-  product_files: string | ProductFile;
+  product_files?: (string | null) | ProductFile;
   approvedForSale?: ('pending' | 'approved' | 'denied') | null;
   priceId?: string | null;
   stripeId?: string | null;
@@ -55,6 +63,14 @@ export interface Product {
     id?: string | null;
   }[];
   rating?: number | null;
+  tags?: (string | Tag)[] | null;
+  country?: (string | null) | Country;
+  region?: string | null;
+  grape?: string | null;
+  color?: string | null;
+  alcohol?: string | null;
+  vintage?: string | null;
+  producer?: (string | null) | Producer;
   updatedAt: string;
   createdAt: string;
 }
@@ -108,23 +124,59 @@ export interface Media {
     };
   };
 }
-export interface Order {
+export interface Tag {
   id: string;
-  _isPaid: boolean;
-  user: string | User;
-  products: (string | Product)[];
+  title?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+export interface Country {
+  id: string;
+  name: string;
+  code: string;
+  flag?: string | Media | null;
+  updatedAt: string;
+  createdAt: string;
+}
+export interface Producer {
+  id: string;
+  title?: string | null;
+  notes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
 export interface Review {
   id: string;
-  author?: string | null;
-  userId?: string | null;
+  author?: (string | null) | User;
   rating?: number | null;
   content?: string | null;
   replyPost?: (string | null) | Product;
   replyComment?: (string | null) | Review;
   isApproved?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+export interface BookmarksCollection {
+  id: string;
+  title: string;
+  bookmarks?: (string | Bookmark)[] | null;
+  user: string | User;
+  image?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+export interface Bookmark {
+  id: string;
+  product: string | Product;
+  user: string | User;
+  updatedAt: string;
+  createdAt: string;
+}
+export interface Order {
+  id: string;
+  _isPaid: boolean;
+  user: string | User;
+  products: (string | Product)[];
   updatedAt: string;
   createdAt: string;
 }

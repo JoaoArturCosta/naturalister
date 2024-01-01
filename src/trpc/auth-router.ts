@@ -1,6 +1,6 @@
 import {
   AuthCredentialsValidator,
-  AuthCredentialsValidatorWithName,
+  AuthCredentialsValidatorWithUserDetails,
 } from '../lib/validators/account-credentials-validator';
 import { publicProcedure, router } from './trpc';
 import { getPayloadClient } from '../get-payload';
@@ -9,9 +9,9 @@ import { string, z } from 'zod';
 
 export const authRouter = router({
   createPayloadUser: publicProcedure
-    .input(AuthCredentialsValidatorWithName)
+    .input(AuthCredentialsValidatorWithUserDetails)
     .mutation(async ({ input }) => {
-      const { firstName, lastName, email, password } = input;
+      const { firstName, lastName, country, email, password } = input;
       const payload = await getPayloadClient();
 
       // check if user already exists
@@ -31,6 +31,7 @@ export const authRouter = router({
         data: {
           firstName,
           lastName,
+          country,
           email,
           password,
           role: 'user',

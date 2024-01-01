@@ -7,7 +7,6 @@ export const ReviewValidator = z.object({
     .string()
     .min(2, { message: 'Review must be at least 100 characters long.' }),
   rating: z.number(),
-  // date: z.date(),
 });
 
 export type TReviewValidator = z.infer<typeof ReviewValidator>;

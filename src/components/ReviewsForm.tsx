@@ -29,7 +29,7 @@ const ReviewsForm = ({ productId }: { productId: string }) => {
     resolver: zodResolver(ReviewValidator),
     defaultValues: {
       id: productId,
-      author: `${user?.user.firstName} ${user?.user.lastName}` || '',
+      author: user?.user?.id || '',
       review: '',
       rating: 0,
     },
@@ -48,10 +48,16 @@ const ReviewsForm = ({ productId }: { productId: string }) => {
     },
   });
 
+  const { data: review } = trpc.getUserProductReview.useQuery({
+    userId: user?.user?.id || '',
+    productId: productId,
+  });
+
   const onSubmit = (values: TReviewValidator) => {
-    console.log('values', values);
     processComment(values);
   };
+
+  if (!!review) return null;
 
   if (!user?.token) return null;
 
@@ -60,7 +66,7 @@ const ReviewsForm = ({ productId }: { productId: string }) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8">
+          className="space-y-8 py-12">
           <FormField
             control={form.control}
             name="review"
