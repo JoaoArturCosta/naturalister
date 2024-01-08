@@ -20,23 +20,68 @@ export const PRODUCT_CATEGORIES = [
       },
     ],
   },
+];
+
+export const VENUE_CATEGORIES = [
   {
-    label: 'Icons',
-    value: 'icons' as const,
+    label: 'Bars',
+    value: 'bars' as const,
+    featured: [
+      {
+        name: 'Editor picks',
+        href: `/venues?category=bars`,
+        imageSrc: '/nav/ui-kits/mixed.jpg',
+      },
+      {
+        name: 'New Additions',
+        href: '/venues?category=bars&sort=desc',
+        imageSrc: '/nav/ui-kits/blue.jpg',
+      },
+      {
+        name: 'Top rated',
+        href: '/venues?category=bars',
+        imageSrc: '/nav/ui-kits/purple.jpg',
+      },
+    ],
+  },
+  {
+    label: 'Restaurants',
+    value: 'restaurants' as const,
     featured: [
       {
         name: 'Favorite Icon Picks',
-        href: `/products?category=icons`,
+        href: `/venues?category=restaurants`,
         imageSrc: '/nav/icons/picks.jpg',
       },
       {
         name: 'New Arrivals',
-        href: '/products?category=icons&sort=desc',
+        href: '/venues?category=restaurants&sort=desc',
         imageSrc: '/nav/icons/new.jpg',
       },
       {
         name: 'Bestselling Icons',
-        href: '/products?category=icons',
+        href: '/venues?category=restaurants',
+        imageSrc: '/nav/icons/bestsellers.jpg',
+      },
+    ],
+  },
+  {
+    label: 'Shops',
+    value: 'shops' as const,
+    featured: [
+      {
+        name: 'Favorite Icon Picks',
+        href: `/venues?category=shops`,
+        imageSrc: '/nav/icons/picks.jpg',
+      },
+      {
+        name: 'New Arrivals',
+        href: '/venues?category=shops&sort=desc',
+        imageSrc: '/nav/icons/new.jpg',
+      },
+      {
+        name: 'Bestselling Icons',
+        href: '/venues?category=shops',
         imageSrc: '/nav/icons/bestsellers.jpg',
       },
     ],

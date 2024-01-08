@@ -36,6 +36,9 @@ const UserAccountNav = ({ user }: { user: User }) => {
             <p className="font-medium text-sm text-black">{user.email}</p>
           </div>
         </div>
+        <DropdownMenuItem asChild>
+          <Link href="/account/collections">Account</Link>
+        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 

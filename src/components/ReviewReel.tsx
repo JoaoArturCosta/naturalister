@@ -19,7 +19,7 @@ const ReviewReel = (props: ReviewReelProps) => {
   const { query } = props;
 
   const { data: queryResults, isLoading } =
-    trpc.getInfiniteReviews.useInfiniteQuery(
+    trpc.reviews.getInfiniteReviews.useInfiniteQuery(
       {
         limit: FALLBACK_LIMIT,
         query,

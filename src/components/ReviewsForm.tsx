@@ -35,20 +35,21 @@ const ReviewsForm = ({ productId }: { productId: string }) => {
     },
   });
 
-  const { mutate: processComment, isLoading } = trpc.postReview.useMutation({
-    onSuccess: async () => {
-      toast.success('Your Review was submitted successfully');
+  const { mutate: processComment, isLoading } =
+    trpc.reviews.postReview.useMutation({
+      onSuccess: async () => {
+        toast.success('Your Review was submitted successfully');
 
-      form.reset();
-    },
-    onError: error => {
-      toast.error(
-        'An error occurred while submitting your review. Please try again.'
-      );
-    },
-  });
+        form.reset();
+      },
+      onError: error => {
+        toast.error(
+          'An error occurred while submitting your review. Please try again.'
+        );
+      },
+    });
 
-  const { data: review } = trpc.getUserProductReview.useQuery({
+  const { data: review } = trpc.reviews.getUserProductReview.useQuery({
     userId: user?.user?.id || '',
     productId: productId,
   });

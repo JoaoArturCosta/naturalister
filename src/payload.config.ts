@@ -15,6 +15,8 @@ import { Countries } from './collections/Countries';
 import Producers from './collections/Producers';
 import { Bookmarks } from './collections/Bookmarks';
 import { BookmarksCollections } from './collections/BookmarksCollection';
+import { Venues } from './collections/Venues';
+import { Events } from './collections/Events';
 
 dotenv.config({
   path: path.resolve(__dirname, '../.env'),
@@ -33,6 +35,8 @@ export default buildConfig({
     Producers,
     Bookmarks,
     BookmarksCollections,
+    Venues,
+    Events,
   ],
   routes: {
     admin: '/contribute',

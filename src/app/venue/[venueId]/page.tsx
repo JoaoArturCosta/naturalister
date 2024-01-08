@@ -1,50 +1,36 @@
-import AddToCartButton from '@/components/AddToCartButton';
-import BookmarkDialog from '@/components/BookmarkDialog';
 import ImageSlider from '@/components/ImageSlider';
 import MaxWidthWrapper from '@/components/MaxWidthWrapper';
-import ProductReel from '@/components/ProductReel';
-import ReviewReel from '@/components/ReviewReel';
-import ReviewsForm from '@/components/ReviewsForm';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Button, buttonVariants } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { PRODUCT_CATEGORIES } from '@/config';
+import { VENUE_CATEGORIES } from '@/config';
 import { getPayloadClient } from '@/get-payload';
-import { Country, Producer, Tag } from '@/payload-types';
-import { Rating } from '@smastrom/react-rating';
-import { Check, Shield } from 'lucide-react';
+import { format } from 'date-fns';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-interface PageProps {
+interface VenuePageProps {
   params: {
-    productId: string;
+    venueId: string;
   };
 }
 
 const BREADCRUMBS = [
   { id: 1, name: 'Home', href: '/' },
-  { id: 2, name: 'Wines', href: '/products?category=wines' },
+  { id: 2, name: 'Venues', href: '/venues' },
 ];
 
-const Page = async ({ params }: PageProps) => {
-  const { productId } = params;
+const VenuePage = async ({ params }: VenuePageProps) => {
+  const { venueId } = params;
 
   const payload = await getPayloadClient();
 
-  const { docs: products } = await payload.find({
-    collection: 'products',
+  const { docs: venues } = await payload.find({
+    collection: 'venues',
     limit: 1,
     where: {
       id: {
-        equals: productId,
+        equals: venueId,
       },
-      approvedForSale: {
+      approved: {
         equals: 'approved',
       },
     },
@@ -54,30 +40,51 @@ const Page = async ({ params }: PageProps) => {
     collection: 'reviews',
     where: {
       replyPost: {
-        equals: productId,
+        equals: venueId,
       },
     },
+  });
+
+  const { docs: events } = await payload.find({
+    collection: 'events',
+    where: {
+      venue: {
+        equals: venueId,
+      },
+    },
+  });
+
+  const nextEvent = events.find(event => {
+    const eventDate = new Date(event.date);
+    const now = new Date();
+
+    return eventDate > now;
+  });
+
+  const previousEvents = events.filter(event => {
+    const eventDate = new Date(event.date);
+    const now = new Date();
+
+    return eventDate < now;
   });
 
   const averageRating =
     reviews.reduce((acc, { rating }) => acc + (rating || 0), 0) /
       reviews.length || 0;
 
-  const [product] = products;
+  const [venue] = venues;
 
-  if (!product) return notFound();
+  if (!venue) return notFound();
 
-  const producer = product?.producer as Producer;
-
-  const country = product?.country as Country;
-
-  const tags = product?.tags as Tag[];
-
-  const label = PRODUCT_CATEGORIES.find(
-    ({ value }) => value === product.category
+  const label = VENUE_CATEGORIES.find(
+    ({ value }) => value === venue.category
   )?.label;
 
-  const validUrls = product.images
+  const validUrls = venue.images
+    .map(({ image }) => (typeof image === 'string' ? image : image.url))
+    .filter(Boolean) as string[];
+
+  const eventValidUrls = (nextEvent?.images || [])
     .map(({ image }) => (typeof image === 'string' ? image : image.url))
     .filter(Boolean) as string[];
 
@@ -111,24 +118,19 @@ const Page = async ({ params }: PageProps) => {
             </ol>
 
             <div className="mt-4">
-              <Link href={`/products?producerId=${producer?.id}`}>
-                <h4 className="font-light underline underline-offset-8 decoration-stone-200 decoration-1 pb-6">
-                  {producer?.title}
-                </h4>
-              </Link>
               <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                {product.name}
+                {venue.name}
               </h1>
             </div>
 
             <section className="mt-4">
               <div className="flex items-center">
                 <p className=" flex gap-2 font-semibold text-gray-900">
-                  <Rating
+                  {/* <Rating
                     readOnly
                     value={averageRating}
                     style={{ maxWidth: 80 }}
-                  />
+                  /> */}
                   <span>{averageRating.toFixed(2) || 0}</span>
                 </p>
 
@@ -136,52 +138,19 @@ const Page = async ({ params }: PageProps) => {
                   {label}
                 </div>
 
-                <div className="ml-4 text-muted-foreground">
-                  <BookmarkDialog productId={productId} />
-                </div>
-              </div>
-              <div className="mt-4 flex gap-2 items-center flex-wrap">
-                {tags?.map(({ title }) => (
-                  <Link
-                    key={title}
-                    href={`/products?tag=${title}`}
-                    className="text-sm font-medium underline underline-offset-2">
-                    {title}
-                  </Link>
-                ))}
+                {/* <div className="ml-4 text-muted-foreground">
+                  <BookmarkDialog venueId={venueId} />
+                </div> */}
               </div>
 
               <div className="mt-4 space-y-6">
                 <p className="text-base text-muted-foreground">
-                  {product.description}
+                  {venue.address}
                 </p>
+                <p className="text-base ">{venue.description}</p>
               </div>
 
-              <div className="mt-4 flex flex-col gap-2 pb-4">
-                {!!country && (
-                  <p className="font-normal">Country: {country?.name}</p>
-                )}
-
-                {!!product?.region && (
-                  <p className="font-normal">Region: {product?.region}</p>
-                )}
-
-                {!!product?.grape && (
-                  <p className="font-normal">Grape: {product?.grape}</p>
-                )}
-
-                {!!product?.color && (
-                  <p className="font-normal">Colour: {product?.color}</p>
-                )}
-
-                {!!product?.alcohol && (
-                  <p className="font-normal">Alcohol: {product?.alcohol}</p>
-                )}
-
-                {!!product?.vintage && (
-                  <p className="font-normal">Vintage: {product?.vintage}</p>
-                )}
-              </div>
+              <div className="mt-4 flex flex-col gap-2 pb-4"></div>
               <Separator />
 
               {/* <div className="mt-6 flex items-center">
@@ -193,7 +162,7 @@ const Page = async ({ params }: PageProps) => {
                   Eligible for instant delivery
                 </p>
               </div> */}
-              <Accordion
+              {/* <Accordion
                 type="single"
                 collapsible
                 className="w-full">
@@ -205,7 +174,7 @@ const Page = async ({ params }: PageProps) => {
                     </p>
                   </AccordionContent>
                 </AccordionItem>
-              </Accordion>
+              </Accordion> */}
             </section>
           </div>
 
@@ -237,16 +206,65 @@ const Page = async ({ params }: PageProps) => {
           </div> */}
         </div>
       </div>
-      <Separator />
+      {nextEvent && (
+        <>
+          <Separator />
+          <section className="mt-4">
+            <h3 className="text-2xl font-bold text-gray-900">Next Event</h3>
+            <div className="mt-8 lg:grid lg:grid-cols-8 lg:max-w-7xl lg:gap-12 py-4">
+              <div className="lg:col-span-3 lg:self-center">
+                <div className="aspect-square rounded-lg">
+                  <ImageSlider urls={eventValidUrls} />
+                </div>
+              </div>
+              <div className="flex flex-col lg:col-span-5">
+                <p className="text-xl font-bold ">{nextEvent?.name}</p>
+                <p className="text-muted-foreground mt-1">
+                  {format(new Date(nextEvent?.date || 0), 'dd MMM yy')}
+                </p>
+                <p className="mt-6 max-w-lg">{nextEvent?.description}</p>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
+      {previousEvents.length > 0 && (
+        <>
+          <section className="mt-4">
+            <h3 className="text-2xl font-bold text-gray-900">
+              Previous Events
+            </h3>
+            <div className="relative">
+              <div className="mt-6 flex items-center w-full">
+                <div className="w-full grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:grid-cols-4 md:gap-y-10 lg:gap-x-8">
+                  {previousEvents.map(event => (
+                    <div key={event.id}>
+                      <div className="flex flex-col w-full">
+                        <ImageSlider urls={validUrls} />
 
-      <ReviewsForm productId={productId} />
+                        <h3 className="mt-4 font-medium text-sm text-gray-700">
+                          {venue.name}
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500">{label}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+          <Separator />
+        </>
+      )}
+
+      {/* <ReviewsForm venueId={venueId} />
 
       <ReviewReel
-        query={{ limit: 5, sort: '-createdAt', relatedProductId: productId }}
-      />
+        query={{ limit: 5, sort: '-createdAt', relatedProductId: venueId }}
+      /> */}
       <Separator />
-      <ProductReel
-        href="/products"
+      {/* <ProductReel
+        href="/venues"
         query={{
           category: product.category,
           producerId: producer?.id,
@@ -254,9 +272,9 @@ const Page = async ({ params }: PageProps) => {
         }}
         title={`Similar ${label}`}
         subtitle={`Browse similar high-quality ${label} just like '${product.name}'`}
-      />
+      /> */}
     </MaxWidthWrapper>
   );
 };
 
-export default Page;
+export default VenuePage;

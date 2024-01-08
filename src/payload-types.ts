@@ -18,6 +18,8 @@ export interface Config {
     producers: Producer;
     bookmarks: Bookmark;
     bookmarksCollection: BookmarksCollection;
+    venues: Venue;
+    events: Event;
     reviews: Review;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -27,6 +29,7 @@ export interface Config {
 export interface User {
   id: string;
   products?: (string | Product)[] | null;
+  venues?: (string | null) | Venue;
   reviews?: (string | Review)[] | null;
   product_files?: (string | ProductFile)[] | null;
   role: 'admin' | 'user';
@@ -53,7 +56,7 @@ export interface Product {
   name: string;
   description?: string | null;
   price: number;
-  category: 'wines' | 'icons';
+  category: 'wines';
   product_files?: (string | null) | ProductFile;
   approvedForSale?: ('pending' | 'approved' | 'denied') | null;
   priceId?: string | null;
@@ -145,6 +148,27 @@ export interface Producer {
   updatedAt: string;
   createdAt: string;
 }
+export interface Venue {
+  id: string;
+  name: string;
+  description: string;
+  category: 'bars' | 'restaurants' | 'shops';
+  address: string;
+  images: {
+    image: string | Media;
+    id?: string | null;
+  }[];
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  location?: [number, number] | null;
+  rating?: number | null;
+  products?: (string | Product)[] | null;
+  approved?: ('pending' | 'approved' | 'denied') | null;
+  updatedAt: string;
+  createdAt: string;
+}
 export interface Review {
   id: string;
   author?: (string | null) | User;
@@ -159,7 +183,7 @@ export interface Review {
 export interface BookmarksCollection {
   id: string;
   title: string;
-  bookmarks?: (string | Bookmark)[] | null;
+  bookmarks: (string | Bookmark)[];
   user: string | User;
   image?: string | null;
   updatedAt: string;
@@ -177,6 +201,22 @@ export interface Order {
   _isPaid: boolean;
   user: string | User;
   products: (string | Product)[];
+  updatedAt: string;
+  createdAt: string;
+}
+export interface Event {
+  id: string;
+  name: string;
+  description: string;
+  date: string;
+  venue: string | Venue;
+  images?:
+    | {
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
+  price?: string | null;
   updatedAt: string;
   createdAt: string;
 }

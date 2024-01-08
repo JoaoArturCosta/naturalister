@@ -1,5 +1,6 @@
 import MaxWidthWrapper from '@/components/MaxWidthWrapper';
 import ProductReel from '@/components/ProductReel';
+import VenueReel from '@/components/VenueReel';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ArrowDownToLine, CheckCircle, Leaf } from 'lucide-react';
 import Link from 'next/link';
@@ -51,6 +52,11 @@ export default function Home() {
         <ProductReel
           query={{ sort: 'desc', limit: 100 }}
           href="/products?sort=recent"
+          title="Brand new"
+        />
+        <VenueReel
+          query={{ sort: 'desc', limit: 10 }}
+          href="/venues?sort=recent"
           title="Brand new"
         />
       </MaxWidthWrapper>
